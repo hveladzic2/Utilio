@@ -9,17 +9,29 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Helpers
     public class NovoSarajevoHelper
     {
 
-        public static List<Entry> GetNovoSarajevoAds(DateTime fromDate)
+        public static List<string> categories = new List<string>() {"konkursi/aktuelni-konkursi/", "konkursi/arhiva-konkursa/", "javni-pozivi/aktuelni-javni-pozivi/", "javni-pozivi/arhiva-javnih-poziva/", "javne-nabavke/aktuelne-javne-nabavke/", "javne-nabavke/arhiva-javne-nabavke/"};
+        public static List<Entry> entries = new List<Entry>();
+
+        public static List<Entry> GetNovoSarajeviAllNotifications(DateTime fromDate) 
         {
-            string url = "https://novosarajevo.ba/konkursi/aktuelni-konkursi/";
-            var entries = new List<Entry>();
+            string url = "https://novosarajevo.ba/";
+            GetNovoSarajevoNews(fromDate, url + "o-opcini/sve-novosti/", "o-opcini/sve-novosti/");
+            foreach (string link in categories) 
+            {
+                GetNovoSarajevoAds(fromDate, url + link, link);
+            }
+            return entries;
+
+        }
+        public static List<Entry> GetNovoSarajevoAds(DateTime fromDate, string url, string category)
+        {
 
             HtmlWeb web = new HtmlWeb();
             HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
             doc = web.Load(url);
             String stringDate;
             DateTime d = new DateTime();
-            // extracting all links
+
             foreach (HtmlNode link in doc.DocumentNode.SelectNodes("//*[@class='wpv-loop js-wpv-loop']//a[@href]"))
             {
                 HtmlAttribute att = link.Attributes["href"];
@@ -31,8 +43,9 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Helpers
                     stringDate = Regex.Replace(stringDate, @"\t|\n|\r", "");
                     
                     d = DateTime.ParseExact(stringDate, "dd.MM.yyyy.", CultureInfo.InvariantCulture);
-                    // if timestamp is 0 (not specified), return all news
+
                     if (DateTime.Compare(d, fromDate) < 0) break;
+
                     string docs = null;
                     foreach (HtmlNode docLink in doc1.DocumentNode.SelectNodes("//*[@class='article-content-inner']//a[@href]"))
                     {
@@ -45,7 +58,7 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Helpers
                         Title = doc1.DocumentNode.SelectSingleNode("//*[@class='article-content-inner']//h2").InnerText,
                         Content = docs,
                         SourceUrl = url,
-                        Description = "Ads",
+                        Description = category,
                         RawLog = "",
                         AdditionalInformation = "",
                         Regions = new List<int>(),
@@ -56,18 +69,15 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Helpers
 
             return entries;
         }
-        public static List<Entry> GetNovoSarajevoNews(DateTime fromDate)
+        public static List<Entry> GetNovoSarajevoNews(DateTime fromDate, string url, string category)
         {
-            string url = "https://novosarajevo.ba/o-opcini/sve-novosti/";
-            var entries = new List<Entry>();
 
             HtmlWeb web = new HtmlWeb();
             HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
             doc = web.Load(url);
             String stringDate;
             DateTime d = new DateTime();
-            // extracting all links
-            //int br = 0;
+
             foreach (HtmlNode link in doc.DocumentNode.SelectNodes("//*[@class='wpv-loop js-wpv-loop']//a[@href]"))
             {
                 HtmlAttribute att = link.Attributes["href"];
@@ -92,7 +102,7 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Helpers
                         Title = doc1.DocumentNode.SelectSingleNode("//*[@class='article-content-inner']//h2").InnerText,
                         Content = desc,
                         SourceUrl = url,
-                        Description = "News",
+                        Description = category,
                         RawLog = "",
                         AdditionalInformation = "",
                         Regions = new List<int>(),

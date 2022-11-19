@@ -27,7 +27,7 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
         {
             _logger.LogDebug("Entering FetchProviderData method");
 
-            var entries = NovoSarajevoHelper.GetNovoSarajevoNews(fromDate);
+            var entries = NovoSarajevoHelper.GetNovoSarajeviAllNotifications(fromDate);
             var referenceIdentifier = string.Empty; // not used for now
 
             _logger.LogDebug("End FetchProviderData method");
