@@ -20,15 +20,32 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Api.Controllers
         private readonly ILogger<ProviderController> _logger;
         private readonly IProviderScrapper _providerScrapper;
         private readonly IValidator<FetchDataRequest> _validator;
+        private readonly IConfiguration _config;
 
         public ProviderController(
             ILogger<ProviderController> logger,
             IProviderScrapper providerScrapper,
-            IValidator<FetchDataRequest> validator)
+            IValidator<FetchDataRequest> validator,
+            IConfiguration config)
         {
             _logger = logger;
             _providerScrapper = providerScrapper;
             _validator = validator;
+            _config = config;
+
+            List<string> categories = new List<string>();
+
+            categories.Add(_config.GetValue<string>("sveNovosti"));
+            categories.Add(_config.GetValue<string>("arhivaJavnihRasprava"));
+            categories.Add(_config.GetValue<string>("aktuelneJavneRasprave"));
+            categories.Add(_config.GetValue<string>("arhivaKonkursa"));
+            categories.Add(_config.GetValue<string>("aktuelniKonkursi"));
+            categories.Add(_config.GetValue<string>("aktuelniJavniPozivi"));
+            categories.Add(_config.GetValue<string>("arhivaJavnihPoziva"));
+            categories.Add(_config.GetValue<string>("aktuelneJavneNabavke"));
+            categories.Add(_config.GetValue<string>("arhivaJavneNabavke"));
+
+            _providerScrapper.setData(categories, _config.GetValue<string>("NovoSarajevo"));
         }
 
         //[Route("fetch")]
@@ -48,6 +65,7 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Api.Controllers
                     Success = false
                 }; 
             }
+
 
             var result = await _providerScrapper.FetchProviderData(request.FromDateUTC, request.LastReferenceIdentifier, request.GeoLocationServiceUri);
 

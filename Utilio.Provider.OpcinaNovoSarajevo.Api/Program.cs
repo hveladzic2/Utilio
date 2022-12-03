@@ -28,6 +28,9 @@ builder.Services.AddSingleton<ILoggerAdapter, NLogAdapter>();
 // Cache
 builder.Services.AddSingleton<ICacheProvider, InMemoryCacheProvider>();
 
+//Config
+builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
 // Business Layer
 builder.Services.AddTransient<IProviderScrapper, ProviderScrapper>();
 

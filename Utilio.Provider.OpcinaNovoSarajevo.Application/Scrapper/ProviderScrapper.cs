@@ -16,6 +16,8 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
     {
         private readonly ICacheProvider _cacheProvider;
         private readonly ILoggerAdapter _logger;
+        private List<string> categories { get; set; }
+        private string url { get; set; }
 
         private List<Entry> entries = new List<Entry>();
         public ProviderScrapper (
@@ -116,8 +118,6 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
 
         private List<Entry> GetNovoSarajeviAllNotifications(DateTime fromDate)
         {
-            List<string> categories = new List<string>() { "o-opcini/sve-novosti/", "javne-rasprave/arhiva-javnih-rasprava/", "javne-rasprave/aktuelne-javne-rasprave/", "konkursi/aktuelni-konkursi/", "konkursi/arhiva-konkursa/", "javni-pozivi/aktuelni-javni-pozivi/", "javni-pozivi/arhiva-javnih-poziva/", "javne-nabavke/aktuelne-javne-nabavke/", "javne-nabavke/arhiva-javne-nabavke/" };
-            string url = "https://novosarajevo.ba/";
             foreach (string link in categories)
             {
                 GetNovoSarajevoAds(fromDate, url + link, link);
@@ -199,6 +199,12 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
             }
 
             return entries;
+        }
+
+        public void setData(List<string> data, string baseUrl)
+        {
+            categories = data;
+            url = baseUrl;
         }
     }
 }
