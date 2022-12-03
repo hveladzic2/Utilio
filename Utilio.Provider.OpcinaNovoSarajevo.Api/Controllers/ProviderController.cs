@@ -45,7 +45,7 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Api.Controllers
             categories.Add(_config.GetValue<string>("aktuelneJavneNabavke"));
             categories.Add(_config.GetValue<string>("arhivaJavneNabavke"));
 
-            _providerScrapper.setData(categories, _config.GetValue<string>("NovoSarajevo"));
+            _providerScrapper.setData(categories, _config.GetValue<string>("NovoSarajevo"), _config.GetValue<string>("loopQuery"), _config.GetValue<string>("contentQuery"), _config.GetValue<string>("dateQuery"));
         }
 
         //[Route("fetch")]

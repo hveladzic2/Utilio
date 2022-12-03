@@ -19,6 +19,10 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
         private List<string> categories { get; set; }
         private string url { get; set; }
 
+        private string dateQuery { get; set; }
+        private string loopQuery { get; set; }
+        private string contentQuery { get; set; }
+
         private List<Entry> entries = new List<Entry>();
         public ProviderScrapper (
             ILoggerAdapter logger,
@@ -133,17 +137,16 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
             DateTime publishedDate = new DateTime();
             DateTime startDate = new DateTime();
             DateTime endDate = new DateTime();
-
-            if (doc.DocumentNode.SelectNodes("//*[@class='wpv-loop js-wpv-loop']//a[@href]") != null)
+            if (doc.DocumentNode.SelectNodes(loopQuery + "a[@href]") != null)
             {
-                foreach (HtmlNode link in doc.DocumentNode.SelectNodes("//*[@class='wpv-loop js-wpv-loop']//a[@href]"))
+                foreach (HtmlNode link in doc.DocumentNode.SelectNodes(loopQuery + "a[@href]"))
                 {
                     HtmlAttribute att = link.Attributes["href"];
 
 
                     if (category.Contains("aktueln"))
                     {
-                        foreach (HtmlNode td in doc.DocumentNode.SelectNodes("//*[@class='wpv-loop js-wpv-loop']//td"))
+                        foreach (HtmlNode td in doc.DocumentNode.SelectNodes(loopQuery + "td"))
                         {
                             Match match = Regex.Match(td.InnerText, @"\d{2}\.\d{2}\.\d{4}");
                             if (td.InnerText.Contains("Objavljen"))
@@ -160,21 +163,21 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
                     if (att.Value.Contains("a"))
                     {
                         HtmlAgilityPack.HtmlDocument doc1 = web.Load(att.Value);
-                        publishedDate = DateTime.ParseExact(Regex.Replace(doc1.DocumentNode.SelectSingleNode("//*[@class='article-date']//span").InnerText, @"\t|\n|\r", ""), "dd.MM.yyyy.", CultureInfo.InvariantCulture);
+                        publishedDate = DateTime.ParseExact(Regex.Replace(doc1.DocumentNode.SelectSingleNode(dateQuery).InnerText, @"\t|\n|\r", ""), "dd.MM.yyyy.", CultureInfo.InvariantCulture);
 
                         if (DateTime.Compare(publishedDate, fromDate) < 0) break;
 
                         string docs = null;
-                        if (category.Contains("novosti") && doc1.DocumentNode.SelectNodes("//*[@class='article-content']//p") != null)
+                        if (category.Contains("novosti") && doc1.DocumentNode.SelectNodes(contentQuery + "p") != null)
                         {
-                            foreach (HtmlNode paragraph in doc1.DocumentNode.SelectNodes("//*[@class='article-content']//p"))
+                            foreach (HtmlNode paragraph in doc1.DocumentNode.SelectNodes(contentQuery + "p"))
                             {
                                 docs += paragraph.InnerText;
                             }
                         }
-                        else if (doc1.DocumentNode.SelectNodes("//*[@class='article-content-inner']//a[@href]") != null)
+                        else if (doc1.DocumentNode.SelectNodes(contentQuery + "a[@href]") != null)
                         {
-                            foreach (HtmlNode docLink in doc1.DocumentNode.SelectNodes("//*[@class='article-content-inner']//a[@href]"))
+                            foreach (HtmlNode docLink in doc1.DocumentNode.SelectNodes(contentQuery + "a[@href]"))
                             {
                                 docs += docLink.Attributes["href"].Value + ";";
                             }
@@ -185,7 +188,7 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
                             PublishDate = publishedDate,
                             ReferenceStartDate = startDate,
                             ReferenceEndDate = endDate,
-                            Title = doc1.DocumentNode.SelectSingleNode("//*[@class='article-content-inner']//h2").InnerText,
+                            Title = doc1.DocumentNode.SelectSingleNode(contentQuery + "h2").InnerText,
                             Content = docs,
                             SourceUrl = url,
                             Description = category,
@@ -201,10 +204,13 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
             return entries;
         }
 
-        public void setData(List<string> data, string baseUrl)
+        public void setData(List<string> data, string baseUrl, string loopQ, string contentQ, string dateQ)
         {
             categories = data;
             url = baseUrl;
+            contentQuery = contentQ;
+            loopQuery = loopQ;
+            dateQuery = dateQ;
         }
     }
 }
