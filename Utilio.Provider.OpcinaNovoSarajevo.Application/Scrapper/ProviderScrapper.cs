@@ -167,19 +167,19 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
 
                         if (DateTime.Compare(publishedDate, fromDate) < 0) break;
 
-                        string docs = null;
-                        if (category.Contains("novosti") && doc1.DocumentNode.SelectNodes(contentQuery + "p") != null)
+                        string content = null;
+                        if (doc1.DocumentNode.SelectNodes(contentQuery + "p") != null)
                         {
                             foreach (HtmlNode paragraph in doc1.DocumentNode.SelectNodes(contentQuery + "p"))
                             {
-                                docs += paragraph.InnerText;
+                                content += paragraph.InnerText + " ";
                             }
                         }
-                        else if (doc1.DocumentNode.SelectNodes(contentQuery + "a[@href]") != null)
+                        if (doc1.DocumentNode.SelectNodes(contentQuery + "a[@href]") != null)
                         {
                             foreach (HtmlNode docLink in doc1.DocumentNode.SelectNodes(contentQuery + "a[@href]"))
                             {
-                                docs += docLink.Attributes["href"].Value + ";";
+                                content += docLink.Attributes["href"].Value + ";";
                             }
                         }
 
@@ -189,7 +189,7 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
                             ReferenceStartDate = startDate,
                             ReferenceEndDate = endDate,
                             Title = doc1.DocumentNode.SelectSingleNode(contentQuery + "h2").InnerText,
-                            Content = docs,
+                            Content = content,
                             SourceUrl = url,
                             Description = category,
                             RawLog = "",
