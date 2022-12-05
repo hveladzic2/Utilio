@@ -14,7 +14,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="5.1.5" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
-    <PackageReference Include="Utilio.Provider.Common" Version="1.0.0-CI-20221114-221155" />
+    <PackageReference Include="Utilio.Provider.Common" Version="1.0.0-CI-20221115-095605" />
   </ItemGroup>
 
   <ItemGroup>

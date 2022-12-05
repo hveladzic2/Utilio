@@ -9,6 +9,7 @@ using Utilio.Common.Cache.Interfaces;
 using Utilio.Common.Logger.Interfaces;
 using Utilio.Provider.Common.DataContracts.Response;
 using System.Globalization;
+using Utilio.Common.Utilities;
 
 namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
 {
@@ -16,6 +17,8 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
     {
         private readonly ICacheProvider _cacheProvider;
         private readonly ILoggerAdapter _logger;
+        
+        private readonly HttpClient _httpClient;
         private List<string> categories { get; set; }
         private string url { get; set; }
 
@@ -26,10 +29,29 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
         private List<Entry> entries = new List<Entry>();
         public ProviderScrapper (
             ILoggerAdapter logger,
-            ICacheProvider cacheProvider)
+            ICacheProvider cacheProvider,
+            HttpClient httpClient)
         {
             _cacheProvider = cacheProvider;
             _logger = logger;
+            _httpClient = httpClient;
+            
+            categories = new List<string>();
+
+            categories.Add(ConfigHelper.GetValue<string>("sveNovosti"));
+            categories.Add(ConfigHelper.GetValue<string>("arhivaJavnihRasprava"));
+            categories.Add(ConfigHelper.GetValue<string>("aktuelneJavneRasprave"));
+            categories.Add(ConfigHelper.GetValue<string>("arhivaKonkursa"));
+            categories.Add(ConfigHelper.GetValue<string>("aktuelniKonkursi"));
+            categories.Add(ConfigHelper.GetValue<string>("aktuelniJavniPozivi"));
+            categories.Add(ConfigHelper.GetValue<string>("arhivaJavnihPoziva"));
+            categories.Add(ConfigHelper.GetValue<string>("aktuelneJavneNabavke"));
+            categories.Add(ConfigHelper.GetValue<string>("arhivaJavneNabavke"));
+            
+            url = ConfigHelper.GetValue<string>("NovoSarajevo");
+            contentQuery = ConfigHelper.GetValue<string>("contentQuery");
+            loopQuery = ConfigHelper.GetValue<string>("loopQuery");
+            dateQuery = ConfigHelper.GetValue<string>("dateQuery");
         }
 
         public async Task<(ICollection<Entry> entries, string referenceIdentifier)> FetchProviderData
@@ -47,29 +69,29 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
 
             return (entries, referenceIdentifier);
         }
-        private string GetHtmlContent(string url)
+        private async Task<string> GetHtmlContent(string url)
         {
-            var request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "GET";
-            request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0";
-            request.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
-            request.Headers.Set(HttpRequestHeader.AcceptLanguage, "en-us,en;q=0.5");
-            request.Headers.Set(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0");
+            request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+            request.Headers.Add("Accept-Language", "en-us,en;q=0.5");
+            request.Headers.Add("Accept-Encoding", "gzip,deflate");
 
-            var response = (HttpWebResponse)request.GetResponse();
-            var responseStream = response.GetResponseStream();
-
-            if (response.ContentEncoding?.IndexOf("gzip", StringComparison.InvariantCultureIgnoreCase) >= 0)
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            var responseStream = await response.Content.ReadAsStreamAsync();
+            
+            if (response.Content.Headers.ContentEncoding.Any(x => x.Equals("gzip", StringComparison.InvariantCultureIgnoreCase)))
             {
                 responseStream = new GZipStream(responseStream, CompressionMode.Decompress);
             }
-            else if (response.ContentEncoding?.IndexOf("deflate", StringComparison.InvariantCultureIgnoreCase) >= 0)
+            else if (response.Content.Headers.ContentEncoding.Any(x => x.Equals("deflate", StringComparison.InvariantCultureIgnoreCase)))
             {
                 responseStream = new DeflateStream(responseStream, CompressionMode.Decompress);
             }
 
             using var ms = new MemoryStream();
-            responseStream?.CopyTo(ms);
+            await responseStream.CopyToAsync(ms);
 
             var htmlContent = Encoding.UTF8.GetString(ms.ToArray());
 
@@ -78,7 +100,7 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
 
         private HtmlNode GetSingleNode(string url, string xpath)
         {
-            var html = GetHtmlContent(url);
+            var html = GetHtmlContent(url).Result;
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
 
@@ -91,7 +113,7 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
         private List<string> GetLinks(string url, string xpath)
         {
             List<string> links = new List<string>();
-            var html = GetHtmlContent(url);
+            var html = GetHtmlContent(url).Result;
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
             var anchorTags = htmlDocument.DocumentNode.SelectNodes("//a[@href]");
@@ -202,15 +224,6 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
             }
 
             return entries;
-        }
-
-        public void setData(List<string> data, string baseUrl, string loopQ, string contentQ, string dateQ)
-        {
-            categories = data;
-            url = baseUrl;
-            contentQuery = contentQ;
-            loopQuery = loopQ;
-            dateQuery = dateQ;
         }
     }
 }

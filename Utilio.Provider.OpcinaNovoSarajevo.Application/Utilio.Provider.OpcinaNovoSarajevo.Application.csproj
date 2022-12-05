@@ -9,8 +9,8 @@
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
-    <PackageReference Include="Utilio.Common" Version="1.0.0-CI-20221114-215549" />
-    <PackageReference Include="Utilio.Provider.Common" Version="1.0.0-CI-20221114-221155" />
+    <PackageReference Include="Utilio.Common" Version="1.0.0-CI-20221204-195642" />
+    <PackageReference Include="Utilio.Provider.Common" Version="1.0.0-CI-20221115-095605" />
   </ItemGroup>
 
 </Project>

@@ -17,6 +17,5 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
         /// <param name="geoLocationServiceUrl">An URI to service used to fetch geolocation data</param>
         /// <returns>A tuple of new provider entries and new reference identifier</returns>
         Task<(ICollection<Entry> entries, string referenceIdentifier)> FetchProviderData(DateTime fromDate, string lastReferenceIdentifier, string geoLocationServiceUrl);
-        void setData(List<string> data, string url, string loopQuery, string contentQuery, string dateQuery);
     }
 }

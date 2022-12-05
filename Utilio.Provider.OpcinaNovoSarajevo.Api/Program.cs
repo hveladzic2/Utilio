@@ -7,6 +7,7 @@ using Utilio.Provider.OpcinaNovoSarajevo.Api.Validators;
 using Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper;
 using Utilio.Provider.Common.DataContracts.Request;
 using Microsoft.Extensions.Caching.Memory;
+using Utilio.Common.Utilities;
 using Utilio.Provider.OpcinaNovoSarajevo.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,14 +29,16 @@ builder.Services.AddSingleton<ILoggerAdapter, NLogAdapter>();
 // Cache
 builder.Services.AddSingleton<ICacheProvider, InMemoryCacheProvider>();
 
-//Config
-builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-
 // Business Layer
-builder.Services.AddTransient<IProviderScrapper, ProviderScrapper>();
+builder.Services.AddHttpClient<IProviderScrapper, ProviderScrapper>().SetHandlerLifetime(TimeSpan.FromMinutes(5));
+// builder.Services.AddTransient<IProviderScrapper, ProviderScrapper>();
 
 // Validators
 builder.Services.AddScoped(typeof(IValidator<FetchDataRequest>), typeof(FetchDataRequestValidator));
+
+//Initialize ConfigHelper class with ProviderConfiguration
+ConfigHelper.Initialize(builder.Configuration.GetSection("ProviderConfiguration"));
+
 
 var app = builder.Build();
 
