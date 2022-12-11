@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Utilio.Common" Version="1.0.0-CI-20221204-195642" />
     <PackageReference Include="Utilio.Provider.Common" Version="1.0.0-CI-20221115-095605" />
   </ItemGroup>
 
