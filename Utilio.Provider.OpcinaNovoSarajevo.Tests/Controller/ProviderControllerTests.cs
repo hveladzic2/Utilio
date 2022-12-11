@@ -59,5 +59,29 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Tests.Controller
 
         }
 
+
+
+        [Fact]
+        public async void ProviderController_Fetch_Basic2()
+        {
+            //Arrange
+            var entries = new List<Entry>();
+            var referenceIdentifier = "string";
+            var data = (entries, referenceIdentifier);
+            var request = A.Fake<FetchDataRequest>();
+            var validationResult = new FluentValidation.Results.ValidationResult();
+            validationResult.Errors = new List<FluentValidation.Results.ValidationFailure>();
+            A.CallTo(() => _validator.ValidateAsync(request, default)).Returns(validationResult);
+
+            //Act
+            var actionResult = await _providerController.FetchProviderData(request);
+
+            //Assert
+            Assert.NotNull(actionResult);
+
+            var succes = actionResult.Success;
+            Assert.True(succes);
+        }
+
     }
 }
