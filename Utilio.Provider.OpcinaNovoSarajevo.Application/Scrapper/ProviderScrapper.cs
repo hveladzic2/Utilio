@@ -17,11 +17,9 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
     {
         private readonly ICacheProvider _cacheProvider;
         private readonly ILoggerAdapter _logger;
-        
         private readonly HttpClient _httpClient;
         private List<string> categories { get; set; }
         private string url { get; set; }
-
         private string dateQuery { get; set; }
         private string loopQuery { get; set; }
         private string contentQuery { get; set; }
@@ -76,7 +74,7 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
             request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
             request.Headers.Add("Accept-Language", "en-us,en;q=0.5");
             request.Headers.Add("Accept-Encoding", "gzip,deflate");
-
+        
             var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
             var responseStream = await response.Content.ReadAsStreamAsync();
@@ -89,59 +87,14 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
             {
                 responseStream = new DeflateStream(responseStream, CompressionMode.Decompress);
             }
-
+        
             using var ms = new MemoryStream();
             await responseStream.CopyToAsync(ms);
-
+        
             var htmlContent = Encoding.UTF8.GetString(ms.ToArray());
 
             return htmlContent;
         }
-
-        private HtmlNode GetSingleNode(string url, string xpath)
-        {
-            var html = GetHtmlContent(url).Result;
-            var htmlDocument = new HtmlDocument();
-            htmlDocument.LoadHtml(html);
-
-            //var nodeArray = htmlDocument.DocumentNode.SelectNodes(xpath);
-            var singleNode = htmlDocument.DocumentNode.SelectSingleNode(xpath);
-
-            return singleNode;
-        }
-
-        private List<string> GetLinks(string url, string xpath)
-        {
-            List<string> links = new List<string>();
-            var html = GetHtmlContent(url).Result;
-            var htmlDocument = new HtmlDocument();
-            htmlDocument.LoadHtml(html);
-            var anchorTags = htmlDocument.DocumentNode.SelectNodes("//a[@href]");
-            foreach (var node in anchorTags)
-            {
-                var link = node.GetAttributeValue("href", string.Empty);
-                if (Regex.IsMatch(link, @"/vijesti/\d+"))
-                {
-                    links.Add(node.GetAttributeValue("href", string.Empty));
-                }
-            }
-
-            return new HashSet<String>(links).ToList();
-        }
-
-        // Function to decode html string. Removes all html specifics and returns plain text.
-        private string RecursiveHtmlDecode(string str)
-        {
-            if (string.IsNullOrWhiteSpace(str)) return str;
-            var tmp = HttpUtility.HtmlDecode(str);
-            while (tmp != str)
-            {
-                str = tmp;
-                tmp = HttpUtility.HtmlDecode(str);
-            }
-            return str; //completely decoded string
-        }
-
         private List<Entry> GetNovoSarajeviAllNotifications(DateTime fromDate)
         {
             foreach (string link in categories)
@@ -153,9 +106,14 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
         }
         private List<Entry> GetNovoSarajevoAds(DateTime fromDate, string url, string category)
         {
-            HtmlWeb web = new HtmlWeb();
-            HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
-            doc = web.Load(url);
+            // HtmlWeb web = new HtmlWeb();
+            // HtmlDocument doc = new HtmlDocument();
+            // doc = web.Load(url);
+            
+            var html = GetHtmlContent(url).Result;
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
+            
             DateTime publishedDate = new DateTime();
             DateTime startDate = new DateTime();
             DateTime endDate = new DateTime();
@@ -184,7 +142,11 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
 
                     if (att.Value.Contains("a"))
                     {
-                        HtmlAgilityPack.HtmlDocument doc1 = web.Load(att.Value);
+                        //HtmlAgilityPack.HtmlDocument doc1 = web.Load(att.Value);
+                        
+                        var doc1 = new HtmlDocument();
+                        doc1.LoadHtml(GetHtmlContent(att.Value).Result);
+                        
                         publishedDate = DateTime.ParseExact(Regex.Replace(doc1.DocumentNode.SelectSingleNode(dateQuery).InnerText, @"\t|\n|\r", ""), "dd.MM.yyyy.", CultureInfo.InvariantCulture);
 
                         if (DateTime.Compare(publishedDate, fromDate) < 0) break;
