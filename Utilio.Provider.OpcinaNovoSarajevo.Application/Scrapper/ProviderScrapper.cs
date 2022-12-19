@@ -92,7 +92,7 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
             await responseStream.CopyToAsync(ms);
         
             var htmlContent = Encoding.UTF8.GetString(ms.ToArray());
-
+            
             return htmlContent;
         }
         private List<Entry> GetNovoSarajeviAllNotifications(DateTime fromDate)
