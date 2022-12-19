@@ -113,8 +113,8 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
             var html = GetHtmlContent(url).Result;
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
-            
-            DateTime publishedDate = new DateTime();
+
+            // DateTime publishedDate = new DateTime();
             DateTime startDate = new DateTime();
             DateTime endDate = new DateTime();
             if (doc.DocumentNode.SelectNodes(loopQuery + "a[@href]") != null)
@@ -143,11 +143,14 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
                     if (att.Value.Contains("a"))
                     {
                         //HtmlAgilityPack.HtmlDocument doc1 = web.Load(att.Value);
-                        
+
+                        var html1 = GetHtmlContent(att.Value).Result;
                         var doc1 = new HtmlDocument();
-                        doc1.LoadHtml(GetHtmlContent(att.Value).Result);
-                        
-                        publishedDate = DateTime.ParseExact(Regex.Replace(doc1.DocumentNode.SelectSingleNode(dateQuery).InnerText, @"\t|\n|\r", ""), "dd.MM.yyyy.", CultureInfo.InvariantCulture);
+                        doc1.LoadHtml(html1);
+
+                        if (html1.Length == 0) break;
+
+                        DateTime publishedDate = DateTime.ParseExact(Regex.Replace(doc1.DocumentNode.SelectSingleNode(dateQuery).InnerText, @"\t|\n|\r", ""), "dd.MM.yyyy.", CultureInfo.InvariantCulture);
 
                         if (DateTime.Compare(publishedDate, fromDate) < 0) break;
 

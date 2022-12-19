@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="FakeItEasy" Version="7.3.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+    <PackageReference Include="Moq" Version="4.18.3" />
     <PackageReference Include="Utilio.Common" Version="1.0.0-CI-20221204-195642" />
     <PackageReference Include="Utilio.Provider.Common" Version="1.0.0-CI-20221115-095605" />
     <PackageReference Include="xunit" Version="2.4.1" />
