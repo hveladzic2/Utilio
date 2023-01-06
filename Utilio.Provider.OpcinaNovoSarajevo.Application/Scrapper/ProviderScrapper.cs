@@ -123,19 +123,18 @@ namespace Utilio.Provider.OpcinaNovoSarajevo.Application.Scrapper
                 {
                     HtmlAttribute att = link.Attributes["href"];
 
-
                     if (category.Contains("aktueln"))
                     {
                         foreach (HtmlNode td in doc.DocumentNode.SelectNodes(loopQuery + "td"))
                         {
-                            Match match = Regex.Match(td.InnerText, @"\d{2}\.\d{2}\.\d{4}");
-                            if (td.InnerText.Contains("Objavljen"))
+                            Match match = Regex.Match(td.InnerText, @"\d{1,2}\.\d{1,2}\.\d{4}");
+                            if (td.InnerText.Contains("Objavljen") && match.Value != "" && match.Value != null)
                             {
-                                startDate = DateTime.ParseExact(match.Value + ".", "dd.MM.yyyy.", CultureInfo.InvariantCulture);
+                                startDate = DateTime.ParseExact(match.Value, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None);
                             }
                             else if (td.InnerText.Contains("Završava"))
                             {
-                                endDate = DateTime.ParseExact(match.Value + ".", "dd.MM.yyyy.", CultureInfo.InvariantCulture);
+                                  endDate = DateTime.ParseExact(match.Value, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None);
                             }
                         }
                     }
